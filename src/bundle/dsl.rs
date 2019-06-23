@@ -2,12 +2,14 @@ use std::collections::HashMap;
 use uuid::Uuid;
 use semver::Version;
 
+#[derive(Serialize, Deserialize)]
 #[derive(Clone, Debug)]
 pub struct DenseTensor<T> {
   dimensions: Vec<usize>,
   values: Vec<T>
 }
 
+#[derive(Serialize, Deserialize)]
 #[derive(Debug)]
 pub enum VectorValue {
   Bool(Vec<bool>),
@@ -21,6 +23,7 @@ pub enum VectorValue {
   ByteString(Vec<Vec<u8>>)
 }
 
+#[derive(Serialize, Deserialize)]
 #[derive(Debug)]
 pub enum TensorValue {
   Bool(DenseTensor<bool>),
@@ -34,6 +37,7 @@ pub enum TensorValue {
   ByteString(DenseTensor<Vec<u8>>)
 }
 
+#[derive(Serialize, Deserialize)]
 #[derive(Debug)]
 pub enum BasicValue {
   Bool(bool),
@@ -47,6 +51,7 @@ pub enum BasicValue {
   ByteString(Vec<u8>)
 }
 
+#[derive(Serialize, Deserialize)]
 #[derive(Debug)]
 pub enum Attribute {
   Basic(BasicValue),
@@ -54,36 +59,42 @@ pub enum Attribute {
   Tensor(TensorValue)
 }
 
+#[derive(Serialize, Deserialize)]
 #[derive(Debug, Clone)]
 pub struct Socket {
   name: String,
   port: String
 }
 
+#[derive(Serialize, Deserialize)]
 #[derive(Debug)]
 pub struct Shape {
   inputs: Vec<Socket>,
   outputs: Vec<Socket>
 }
 
+#[derive(Serialize, Deserialize)]
 #[derive(Debug)]
 pub struct Model {
   op: String,
   attributes: HashMap<String, Attribute>
 }
 
+#[derive(Serialize, Deserialize)]
 #[derive(Debug)]
 pub struct Node {
   name: String,
   shape: Shape
 }
 
+#[derive(Serialize, Deserialize)]
 #[derive(Debug)]
 pub enum ConcreteFormat {
   Json,
   Proto
 }
 
+#[derive(Serialize, Deserialize)]
 #[derive(Debug)]
 pub enum Format {
   Concrete(ConcreteFormat),

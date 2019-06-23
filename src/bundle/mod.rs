@@ -3,6 +3,8 @@ pub mod json;
 pub mod ser;
 pub mod tform;
 pub mod frame;
+use std::collections::HashMap;
+
 
 #[cfg(test)]
 mod test {
@@ -11,8 +13,74 @@ mod test {
   use c;
 
   #[test]
+  fn test_airbnb_serde() {
+    let path = "./tmp/model";
+    let builder = ser::FileBuilder::try_new(path).unwrap();
+    let mut registry = ser::Registry::new();
+
+    registry.insert_op(tform::linear_regression::OP);
+    registry.insert_op(tform::string_indexer::OP);
+    registry.insert_op(tform::one_hot_encoder::OP);
+    registry.insert_op(tform::pipeline::OP);
+    registry.insert_op(tform::vector_assembler::OP);
+    registry.insert_op(tform::standard_scaler::OP);
+
+    let ctx = ser::Context::new(Box::new(builder), &registry);
+    let ctx2 = ctx.try_next("root").unwrap();
+    let node = ctx2.read_node().unwrap();
+
+    //note...no need to provide schema.  Schema is inferred by Serde.
+    let json_str="[{\"bathrooms\":2.0, \"bedrooms\":3.0, \"security_deposit\":50.0, \"cleaning_fee\":30.0, \"extra_people\":0.0, \"number_of_reviews\":23.0, \"square_feet\":1200.0, \"review_scores_rating\":93.0, \"cancellation_policy\":\"strict\", \"host_is_superhost\":\"1.0\", \"instant_bookable\":\"1.0\", \"room_type\":\"Entire home/apt\", \"state\":\"NY\"}]";
+
+    let mut result: Vec<HashMap<String, frame::ColElement>> = serde_json::from_str(json_str).unwrap();
+    let mut frame = frame::LeapFrame::with_size(result.len());
+    let mut res_iter=result.iter_mut();
+    match res_iter.next() {
+      Some(x)=>x.drain().for_each(|(k, v)|{
+        frame.try_with_col(frame::Col::new(k, frame::ColData::new(v)));
+      }),
+      None=>println!("No records")
+    };
+    //iterate over the rest
+    res_iter.for_each(|records|{
+      records.drain().for_each(|(k, v)|{
+        match frame.col_indices_by_name.get(&k){
+          Some(index)=>frame.cols[*index].append_record(v),
+          None=>println!("No column named {}", k)
+        }
+        /*match frame.get_col_mut(&k) {
+          Some(&c)=>c.append_record(v),
+          None=>println!("No column named {}", k)
+        };*/
+      });
+    });
+
+    /*let mut frame = frame::LeapFrame::with_size(1);
+    frame.try_with_doubles(String::from("bathrooms"), vec![2.0]).unwrap();
+    frame.try_with_doubles(String::from("bedrooms"), vec![3.0]).unwrap();
+    frame.try_with_doubles(String::from("security_deposit"), vec![50.0]).unwrap();
+    frame.try_with_doubles(String::from("cleaning_fee"), vec![30.0]).unwrap();
+    frame.try_with_doubles(String::from("extra_people"), vec![0.0]).unwrap();
+    frame.try_with_doubles(String::from("number_of_reviews"), vec![23.0]).unwrap();
+    frame.try_with_doubles(String::from("square_feet"), vec![1200.0]).unwrap();
+    frame.try_with_doubles(String::from("review_scores_rating"), vec![93.0]).unwrap();
+
+    frame.try_with_strings(String::from("cancellation_policy"), vec![String::from("strict")]).unwrap();
+    frame.try_with_strings(String::from("host_is_superhost"), vec![String::from("1.0")]).unwrap();
+    frame.try_with_strings(String::from("instant_bookable"), vec![String::from("1.0")]).unwrap();
+    frame.try_with_strings(String::from("room_type"), vec![String::from("Entire home/apt")]).unwrap();
+    frame.try_with_strings(String::from("state"), vec![String::from("NY")]).unwrap();*/
+
+    node.transform(&mut frame).unwrap();
+
+    let r = frame.get_doubles("price_prediction").and_then(|x| x.first()).unwrap();
+
+    assert_eq!(*r, 236.76099900182078);
+  }
+/*
+  #[test]
   fn test_airbnb() {
-    let path = "/tmp/model";
+    let path = "./tmp/model";
     let builder = ser::FileBuilder::try_new(path).unwrap();
     let mut registry = ser::Registry::new();
 
@@ -52,7 +120,7 @@ mod test {
 
   #[test]
   fn test_airbnb_c() {
-    let path = "/tmp/model";
+    let path = "./tmp/model";
     let c_path = ffi::CString::new(path).unwrap();
 
     let c_transformer = c::mleap_transformer_load(c_path.as_ptr());
@@ -122,5 +190,5 @@ mod test {
 
     c::mleap_transformer_free(c_transformer);
     c::mleap_frame_free(c_frame);
-  }
+  }*/
 }
