@@ -16,39 +16,6 @@ pub trait Transformer {
   fn transform(&self, frame: &mut LeapFrame) -> Result<()>;
 }
 
-/*#[derive(Serialize, Deserialize)]
-#[derive(Debug)]
-pub enum ColData {
-  Bool(Vec<bool>),
-  String(Vec<String>),
-  Byte(Vec<i8>),
-  Short(Vec<i16>),
-  Int(Vec<i32>),
-  Long(Vec<i64>),
-  Float(Vec<f32>),
-  Double(Vec<f64>),
-  ByteString(Vec<Vec<u8>>),
-
-  BoolVector(Vec<Vec<bool>>),
-  StringVector(Vec<Vec<String>>),
-  ByteVector(Vec<Vec<i8>>),
-  ShortVector(Vec<Vec<i16>>),
-  IntVector(Vec<Vec<i32>>),
-  LongVector(Vec<Vec<i64>>),
-  FloatVector(Vec<Vec<f32>>),
-  DoubleVector(Vec<Vec<f64>>),
-  ByteStringVector(Vec<Vec<Vec<u8>>>),
-
-  BoolTensor(Vec<DenseTensor<bool>>),
-  StringTensor(Vec<DenseTensor<String>>),
-  ByteTensor(Vec<DenseTensor<i8>>),
-  ShortTensor(Vec<DenseTensor<i16>>),
-  IntTensor(Vec<DenseTensor<i32>>),
-  LongTensor(Vec<DenseTensor<i64>>),
-  FloatTensor(Vec<DenseTensor<f32>>),
-  DoubleTensor(Vec<DenseTensor<f64>>),
-  ByteStringTensor(Vec<DenseTensor<Vec<u8>>>)
-}*/
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]
 #[derive(Debug)]
